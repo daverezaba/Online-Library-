@@ -18,260 +18,36 @@
             --border: #e2e8f0;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            padding: 2rem 1rem;
-        }
+        body { background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; padding: 2rem 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 2rem; }
+        header h1 { color: var(--primary); font-size: 2.5rem; margin-bottom: 0.5rem; }
+        
+        .dashboard { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+        @media (min-width: 768px) { .dashboard { grid-template-columns: 1fr 1fr; } .full-width { grid-column: span 2; } }
 
-        .container {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
+        .card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 1.5rem; border: 1px solid var(--border); }
+        .card h2 { font-size: 1.25rem; margin-bottom: 1rem; color: var(--primary); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center; }
 
-        header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
+        input, textarea, select { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 1rem; font-size: 0.95rem; background: #f8fafc; }
+        button { cursor: pointer; padding: 0.75rem 1.2rem; border: none; border-radius: 6px; font-weight: 600; transition: all 0.2s ease; font-size: 0.95rem; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-danger { background-color: var(--danger); color: white; padding: 0.4rem 0.8rem; font-size: 0.85rem; }
 
-        header h1 {
-            color: var(--primary);
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        header p {
-            color: #718096;
-        }
-
-        /* Dashboard Grid Layout */
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        @media (min-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr 1fr;
-            }
-            .full-width {
-                grid-column: span 2;
-            }
-        }
-
-        /* Card Styles */
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            padding: 1.5rem;
-            border: 1px solid var(--border);
-        }
-
-        .card h2 {
-            font-size: 1.25rem;
-            margin-bottom: 1rem;
-            color: var(--primary);
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 0.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        /* Inputs and Buttons */
-        input, textarea, select {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-bottom: 1rem;
-            font-size: 0.95rem;
-            background: #f8fafc;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            background: #fff;
-        }
-
-        button {
-            cursor: pointer;
-            padding: 0.75rem 1.2rem;
-            border: none;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            font-size: 0.95rem;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .btn-accent {
-            background-color: var(--accent);
-            color: white;
-        }
-
-        .btn-accent:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .btn-danger {
-            background-color: var(--danger);
-            color: white;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.85rem;
-        }
-
-        .btn-danger:hover {
-            background-color: var(--danger-hover);
-        }
-
-        /* 1. Pomodoro Timer styling */
-        .timer-display {
-            font-size: 3.5rem;
-            font-weight: bold;
-            text-align: center;
-            margin: 1.5rem 0;
-            font-family: monospace;
-            color: var(--text-color);
-        }
-
-        .timer-controls {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-        }
-
-        /* 2. Flashcard styling */
-        .flashcard-creator {
-            margin-bottom: 1.5rem;
-        }
-
-        .flashcard-deck {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            background: #f8fafc;
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px dashed var(--border);
-            min-height: 200px;
-            justify-content: center;
-        }
-
-        .flashcard-box {
-            width: 100%;
-            max-width: 400px;
-            height: 180px;
-            perspective: 1000px;
-            cursor: pointer;
-        }
-
-        .flashcard-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            text-align: center;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border-radius: 10px;
-        }
-
-        .flashcard-box.flipped .flashcard-inner {
-            transform: rotateY(180deg);
-        }
-
-        .flashcard-front, .flashcard-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 500;
-        }
-
-        .flashcard-front {
-            background-color: #fff;
-            color: var(--text-color);
-            border: 2px solid var(--primary);
-        }
-
-        .flashcard-back {
-            background-color: var(--primary);
-            color: white;
-            transform: rotateY(180deg);
-        }
-
-        .deck-navigation {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        /* 3. Task List styling */
-        .task-list {
-            list-style: none;
-            max-height: 280px;
-            overflow-y: auto;
-        }
-
-        .task-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            border-bottom: 1px solid var(--border);
-            gap: 1rem;
-        }
-
-        .task-item:last-child {
-            border-bottom: none;
-        }
-
-        .task-text {
-            cursor: pointer;
-            flex-grow: 1;
-        }
-
-        .task-completed .task-text {
-            text-decoration: line-through;
-            color: #a0aec0;
-        }
-
-        .task-input-group {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .task-input-group input {
-            margin-bottom: 0;
-        }
+        /* Timer and Lists */
+        .timer-display { font-size: 3.5rem; font-weight: bold; text-align: center; margin: 1.5rem 0; font-family: monospace; }
+        .task-list { list-style: none; max-height: 280px; overflow-y: auto; }
+        .task-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border-bottom: 1px solid var(--border); gap: 1rem; }
+        .task-completed .task-text { text-decoration: line-through; color: #a0aec0; }
+        
+        /* Flashcards */
+        .flashcard-box { width: 100%; max-width: 400px; height: 180px; perspective: 1000px; cursor: pointer; margin: 0 auto; }
+        .flashcard-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flipped .flashcard-inner { transform: rotateY(180deg); }
+        .flashcard-front, .flashcard-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; padding: 1.5rem; border-radius: 10px; }
+        .flashcard-back { background-color: var(--primary); color: white; transform: rotateY(180deg); }
     </style>
 </head>
 <body>
@@ -283,20 +59,12 @@
         </header>
 
         <div class="dashboard">
-            
-            <!-- SECTION 1: POMODORO TIMER -->
+            <!-- SECTION 1: POMODORO -->
             <div class="card">
                 <h2>⏱️ Focus Timer</h2>
                 <div class="timer-display" id="timer-display">25:00</div>
-                
-                <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
-                    <button class="btn-accent" style="flex: 1;" onclick="setTimerPreset(25)">Study (25m)</button>
-                    <button class="btn-primary" style="flex: 1; background-color: #6366f1;" onclick="setTimerPreset(5)">Short Break (5m)</button>
-                    <button class="btn-primary" style="flex: 1; background-color: #4338ca;" onclick="setTimerPreset(15)">Long Break (15m)</button>
-                </div>
-
-                <div class="timer-controls">
-                    <button id="start-btn" class="btn-accent" onclick="toggleTimer()">Start</button>
+                <div class="timer-controls" style="display:flex; justify-content:center; gap: 0.5rem;">
+                    <button id="start-btn" class="btn-primary" onclick="toggleTimer()">Start</button>
                     <button class="btn-danger" onclick="resetTimer()">Reset</button>
                 </div>
             </div>
@@ -304,255 +72,92 @@
             <!-- SECTION 2: TO-DO LIST -->
             <div class="card">
                 <h2>📝 Homework & Tasks</h2>
-                <div class="task-input-group" style="margin-bottom: 1rem;">
-                    <input type="text" id="task-input" placeholder="What needs to get done?" onkeypress="handleTaskKey(event)">
-                    <button class="btn-primary" onclick="addTask()">Add</button>
-                </div>
-                <ul class="task-list" id="task-list">
-                    <!-- Tasks injected here by JS -->
-                </ul>
+                <input type="text" id="task-input" placeholder="What needs to get done?">
+                <button class="btn-primary" style="width: 100%;" onclick="addTask()">Add Task</button>
+                <ul class="task-list" id="task-list"></ul>
             </div>
 
-            <!-- SECTION 3: FLASHCARDS (FULL WIDTH) -->
+            <!-- SECTION 3: CLASS SCHEDULE (NEW) -->
+            <div class="card">
+                <h2>📅 Class Schedule</h2>
+                <input type="text" id="subj-name" placeholder="Subject Name">
+                <input type="time" id="subj-time">
+                <button class="btn-primary" style="width: 100%;" onclick="addSchedule()">Add Class</button>
+                <ul class="task-list" id="schedule-list"></ul>
+            </div>
+
+            <!-- SECTION 4: FLASHCARDS -->
             <div class="card full-width">
-                <h2>🗂️ Active Recall Flashcards</h2>
-                
-                <div class="dashboard" style="grid-template-columns: 1fr 1.5fr; gap: 1.5rem; box-shadow: none; padding: 0;">
-                    <!-- Creator Form -->
-                    <div class="flashcard-creator">
-                        <h3 style="font-size: 1rem; margin-bottom: 0.5rem; color: #4a5568;">Create New Card</h3>
-                        <label for="card-front" style="font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 0.25rem;">Question / Concept:</label>
-                        <input type="text" id="card-front" placeholder="e.g., What is Photosynthesis?">
-                        
-                        <label for="card-back" style="font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 0.25rem;">Answer / Explanation:</label>
-                        <textarea id="card-back" rows="3" placeholder="e.g., The process by which green plants use sunlight to synthesize nutrients from CO2 and water."></textarea>
-                        
-                        <button class="btn-primary" style="width: 100%;" onclick="createFlashcard()">Save Card</button>
-                    </div>
-
-                    <!-- Flashcard Deck Viewer -->
-                    <div class="flashcard-deck">
-                        <div id="deck-empty-state" style="text-align: center; color: #a0aec0;">
-                            <p>No cards created yet.</p>
-                            <p style="font-size: 0.85rem;">Create a card on the left to start quizzing yourself!</p>
-                        </div>
-
-                        <div id="card-viewer-container" style="display: none; width: 100%; display: flex; flex-direction: column; align-items: center;">
-                            <div class="flashcard-box" onclick="flipCard(this)">
-                                <div class="flashcard-inner">
-                                    <div class="flashcard-front" id="viewer-front">Question</div>
-                                    <div class="flashcard-back" id="viewer-back">Answer</div>
-                                </div>
-                            </div>
-                            
-                            <div class="deck-navigation">
-                                <button class="btn-primary" style="background: #a0aec0;" onclick="prevCard()">&larr; Prev</button>
-                                <span id="card-index" style="font-weight: bold;">1 / 1</span>
-                                <button class="btn-primary" style="background: #a0aec0;" onclick="nextCard()">Next &rarr;</button>
-                                <button class="btn-danger" style="margin-left: 1rem;" onclick="deleteCurrentCard()">Delete</button>
-                            </div>
-                            <p style="font-size: 0.8rem; color: #a0aec0; margin-top: 0.5rem;">Click card to flip</p>
-                        </div>
+                <h2>🗂️ Flashcards</h2>
+                <div class="flashcard-box" id="f-box" onclick="this.classList.toggle('flipped')">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front" id="f-front" style="border: 2px solid var(--primary);">Click to add cards below</div>
+                        <div class="flashcard-back" id="f-back">Answer</div>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
 
     <script>
-        // ==================== STATE MANAGEMENT ====================
+        // App State
         let tasks = JSON.parse(localStorage.getItem('student_tasks')) || [];
-        let flashcards = JSON.parse(localStorage.getItem('student_flashcards')) || [];
+        let schedule = JSON.parse(localStorage.getItem('student_schedule')) || [];
         
+        // --- TIMER LOGIC ---
+        let timeLeft = 1500;
         let timerInterval = null;
-        let timeLeft = 25 * 60; // 25 minutes default
-        let isTimerRunning = false;
-        
-        let currentCardIndex = 0;
-
-        // Initialize App on Load
-        window.onload = function() {
-            renderTasks();
-            updateFlashcardViewer();
-        }
-
-        // ==================== POMODORO TIMER ====================
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            document.getElementById('timer-display').textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-
+        function updateTimer() { document.getElementById('timer-display').textContent = `${Math.floor(timeLeft/60)}:${(timeLeft%60).toString().padStart(2, '0')}`; }
         function toggleTimer() {
-            const startBtn = document.getElementById('start-btn');
-            if (isTimerRunning) {
-                clearInterval(timerInterval);
-                startBtn.textContent = "Start";
-                startBtn.className = "btn-accent";
-                isTimerRunning = false;
-            } else {
-                isTimerRunning = true;
-                startBtn.textContent = "Pause";
-                startBtn.className = "btn-primary";
-                startBtn.style.backgroundColor = "#e2e8f0";
-                startBtn.style.color = "#2d3748";
-                
-                timerInterval = setInterval(() => {
-                    if (timeLeft > 0) {
-                        timeLeft--;
-                        updateTimerDisplay();
-                    } else {
-                        clearInterval(timerInterval);
-                        alert("Time's up! Take a well-deserved break or jump back into studying!");
-                        resetTimer();
-                    }
-                }, 1000);
+            if(timerInterval) { clearInterval(timerInterval); timerInterval = null; document.getElementById('start-btn').textContent = "Start"; }
+            else { timerInterval = setInterval(() => { timeLeft--; updateTimer(); if(timeLeft<=0) { clearInterval(timerInterval); alert("Time's up!"); } }, 1000); document.getElementById('start-btn').textContent = "Pause"; }
+        }
+        function resetTimer() { clearInterval(timerInterval); timerInterval = null; timeLeft = 1500; updateTimer(); }
+
+        // --- TASK LOGIC ---
+        function addTask() {
+            let input = document.getElementById('task-input');
+            if(input.value) { tasks.push({text: input.value, done: false}); input.value=''; render(); }
+        }
+        
+        // --- SCHEDULE LOGIC ---
+        function addSchedule() {
+            let name = document.getElementById('subj-name').value;
+            let time = document.getElementById('subj-time').value;
+            if(name && time) { 
+                schedule.push({name, time, notified: false}); 
+                localStorage.setItem('student_schedule', JSON.stringify(schedule));
+                render();
             }
         }
 
-        function resetTimer() {
-            clearInterval(timerInterval);
-            isTimerRunning = false;
-            timeLeft = 25 * 60;
-            updateTimerDisplay();
-            const startBtn = document.getElementById('start-btn');
-            startBtn.textContent = "Start";
-            startBtn.className = "btn-accent";
-            startBtn.style = "";
-        }
-
-        function setTimerPreset(minutes) {
-            clearInterval(timerInterval);
-            isTimerRunning = false;
-            timeLeft = minutes * 60;
-            updateTimerDisplay();
-            const startBtn = document.getElementById('start-btn');
-            startBtn.textContent = "Start";
-            startBtn.className = "btn-accent";
-            startBtn.style = "";
-        }
-
-
-        // ==================== TASK SYSTEM ====================
-        function renderTasks() {
-            const taskList = document.getElementById('task-list');
-            taskList.innerHTML = '';
+        // --- ALARM MONITOR ---
+        setInterval(() => {
+            const now = new Date();
+            const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
             
-            tasks.forEach((task, index) => {
-                const li = document.createElement('li');
-                li.className = `task-item ${task.completed ? 'task-completed' : ''}`;
-                
-                li.innerHTML = `
-                    <span class="task-text" onclick="toggleTask(${index})">${task.text}</span>
-                    <button class="btn-danger" onclick="deleteTask(${index})">Delete</button>
-                `;
-                taskList.appendChild(li);
+            schedule.forEach(item => {
+                if(item.time === currentTime && !item.notified) {
+                    alert(`⏰ Time for your class: ${item.name}!`);
+                    item.notified = true; // Prevents alert from spamming every second
+                }
             });
+        }, 30000); // Check every 30 seconds
+
+        // Reset notification flag at midnight
+        if(new Date().getMinutes() === 0) schedule.forEach(i => i.notified = false);
+
+        function render() {
+            const list = document.getElementById('task-list');
+            list.innerHTML = tasks.map((t, i) => `<li class="task-item">${t.text} <button class="btn-danger" onclick="tasks.splice(${i},1); render();">X</button></li>`).join('');
+            
+            const schedList = document.getElementById('schedule-list');
+            schedList.innerHTML = schedule.map((s, i) => `<li class="task-item"><strong>${s.name}</strong> - ${s.time} <button class="btn-danger" onclick="schedule.splice(${i},1); localStorage.setItem('student_schedule', JSON.stringify(schedule)); render();">X</button></li>`).join('');
+            
             localStorage.setItem('student_tasks', JSON.stringify(tasks));
         }
 
-        function addTask() {
-            const taskInput = document.getElementById('task-input');
-            const text = taskInput.value.trim();
-            if (text) {
-                tasks.push({ text: text, completed: false });
-                taskInput.value = '';
-                renderTasks();
-            }
-        }
-
-        function handleTaskKey(e) {
-            if (e.key === 'Enter') {
-                addTask();
-            }
-        }
-
-        function toggleTask(index) {
-            tasks[index].completed = !tasks[index].completed;
-            renderTasks();
-        }
-
-        function deleteTask(index) {
-            tasks.splice(index, 1);
-            renderTasks();
-        }
-
-
-        // ==================== FLASHCARD SYSTEM ====================
-        function createFlashcard() {
-            const frontVal = document.getElementById('card-front').value.trim();
-            const backVal = document.getElementById('card-back').value.trim();
-
-            if (!frontVal || !backVal) {
-                alert("Please fill out both the question (front) and answer (back) fields.");
-                return;
-            }
-
-            flashcards.push({ front: frontVal, back: backVal });
-            localStorage.setItem('student_flashcards', JSON.stringify(flashcards));
-            
-            // Reset input values
-            document.getElementById('card-front').value = '';
-            document.getElementById('card-back').value = '';
-            
-            currentCardIndex = flashcards.length - 1; // jump to new card
-            updateFlashcardViewer();
-        }
-
-        function updateFlashcardViewer() {
-            const emptyState = document.getElementById('deck-empty-state');
-            const viewerContainer = document.getElementById('card-viewer-container');
-            
-            if (flashcards.length === 0) {
-                emptyState.style.display = 'block';
-                viewerContainer.style.display = 'none';
-                return;
-            }
-
-            emptyState.style.display = 'none';
-            viewerContainer.style.display = 'flex';
-
-            // Reset any active card flips before showing content
-            const cardBox = document.querySelector('.flashcard-box');
-            if (cardBox) cardBox.classList.remove('flipped');
-
-            // Set Card content
-            document.getElementById('viewer-front').textContent = flashcards[currentCardIndex].front;
-            document.getElementById('viewer-back').textContent = flashcards[currentCardIndex].back;
-            
-            // Set index label
-            document.getElementById('card-index').textContent = `${currentCardIndex + 1} / ${flashcards.length}`;
-        }
-
-        function flipCard(cardElement) {
-            cardElement.classList.toggle('flipped');
-        }
-
-        function nextCard() {
-            if (flashcards.length === 0) return;
-            currentCardIndex = (currentCardIndex + 1) % flashcards.length;
-            updateFlashcardViewer();
-        }
-
-        function prevCard() {
-            if (flashcards.length === 0) return;
-            currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
-            updateFlashcardViewer();
-        }
-
-        function deleteCurrentCard() {
-            if (flashcards.length === 0) return;
-            flashcards.splice(currentCardIndex, 1);
-            localStorage.setItem('student_flashcards', JSON.stringify(flashcards));
-            
-            // Handle index adjustments
-            if (currentCardIndex >= flashcards.length && flashcards.length > 0) {
-                currentCardIndex = flashcards.length - 1;
-            }
-            updateFlashcardViewer();
-        }
+        window.onload = render;
     </script>
 </body>
-                </html>
+</html>
