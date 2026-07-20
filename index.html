@@ -1,449 +1,521 @@
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.application.Application;
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
-import javafx.stage.Stage;
-import javafx.util.Duration;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Companion</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --accent: #10b981;
+            --danger: #ef4444;
+            --radius: 12px;
+        }
 
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
 
-public class PersonalStudyCompanion extends Application {
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 2rem 1rem;
+        }
 
-    // --- State Variables ---
-    private int timeLeft = 25 * 60; // 25 minutes
-    private boolean isTimerRunning = false;
-    private Timeline timerTimeline;
-    private Label timerDisplay;
-    private Button startBtn;
+        .app-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
 
-    private final List<Task> tasks = new ArrayList<>();
-    private final VBox taskListVBox = new VBox(5);
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
 
-    private final List<ScheduleItem> schedules = new ArrayList<>();
-    private final VBox scheduleListVBox = new VBox(5);
+        header h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            font-weight: 800;
+        }
 
-    private final List<Flashcard> flashcards = new ArrayList<>();
-    private int currentCardIndex = 0;
-    private boolean isFlipped = false;
-    private Button flashcardBox;
-    private Label cardIndexLabel;
-    private VBox deckViewerBox;
-    private Label emptyDeckLabel;
+        header p {
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
 
-    public static void main(String[] args) {
-        launch(args);
+        /* Responsive Dashboard Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Card Styling */
+        .card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .card h2 {
+            font-size: 1.15rem;
+            color: var(--text-main);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Form Inputs & Buttons */
+        input, select, textarea {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            margin-bottom: 0.75rem;
+            background: #f1f5f9;
+            color: var(--text-main);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+        .btn {
+            padding: 0.65rem 1.2rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-accent { background: var(--accent); color: white; }
+        .btn-danger { background: var(--danger); color: white; padding: 0.35rem 0.65rem; font-size: 0.8rem; }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Section 1: Focus Timer */
+        .timer-clock {
+            font-size: 3.25rem;
+            font-weight: 800;
+            text-align: center;
+            font-family: monospace;
+            margin: 1rem 0;
+            color: var(--primary);
+        }
+
+        .preset-btns, .timer-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+        }
+
+        /* Section 2 & 3: List Views */
+        .item-list {
+            list-style: none;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        .list-item:last-child { border-bottom: none; }
+
+        .task-done {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .badge {
+            background: #e0e7ff;
+            color: var(--primary);
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        /* Section 4: Flashcards 3D Flip */
+        .flashcard-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .flashcard-box {
+            width: 100%;
+            height: 200px;
+            perspective: 1000px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            border-radius: var(--radius);
+        }
+
+        .flashcard-box.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            border-radius: var(--radius);
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        .card-front {
+            background: #ffffff;
+            border: 2px solid var(--primary);
+            color: var(--text-main);
+        }
+
+        .card-back {
+            background: var(--primary);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <header>
+        <h1>Study Companion</h1>
+        <p>Your centralized dashboard for schedules, active recall, and focus session management.</p>
+    </header>
+
+    <div class="dashboard">
+
+        <!-- 1. POMODORO TIMER -->
+        <div class="card">
+            <h2>⏱️ Focus Timer</h2>
+            <div class="timer-clock" id="timer-display">25:00</div>
+            <div class="preset-btns">
+                <button class="btn btn-accent" onclick="setTimer(25)">Study (25m)</button>
+                <button class="btn" style="background:#cbd5e1" onclick="setTimer(5)">Break (5m)</button>
+                <button class="btn" style="background:#94a3b8; color:white" onclick="setTimer(15)">Long Break (15m)</button>
+            </div>
+            <div class="timer-actions">
+                <button id="start-btn" class="btn btn-primary" onclick="toggleTimer()">Start Session</button>
+                <button class="btn btn-danger" onclick="resetTimer()">Reset</button>
+            </div>
+        </div>
+
+        <!-- 2. SUBJECT SCHEDULE TRACKER -->
+        <div class="card">
+            <h2>📅 Class Schedule</h2>
+            <input type="text" id="sched-subject" placeholder="Subject Name (e.g. Physics 101)">
+            <div class="input-group">
+                <select id="sched-day">
+                    <option value="Mon">Monday</option>
+                    <option value="Tue">Tuesday</option>
+                    <option value="Wed">Wednesday</option>
+                    <option value="Thu">Thursday</option>
+                    <option value="Fri">Friday</option>
+                </select>
+                <input type="time" id="sched-time">
+                <button class="btn btn-primary" onclick="addSchedule()">Add</button>
+            </div>
+            <ul class="item-list" id="sched-list"></ul>
+        </div>
+
+        <!-- 3. QUICK TASK LIST -->
+        <div class="card">
+            <h2>📝 Tasks & Homework</h2>
+            <div class="input-group">
+                <input type="text" id="task-input" placeholder="Add assignment or task..." onkeypress="if(event.key==='Enter') addTask()">
+                <button class="btn btn-primary" onclick="addTask()">Add</button>
+            </div>
+            <ul class="item-list" id="task-list"></ul>
+        </div>
+
+        <!-- 4. FLASHCARD SYSTEM -->
+        <div class="card full-width">
+            <h2>🗂️ Active Recall Flashcards</h2>
+            <div class="flashcard-layout">
+                <!-- Creator Form -->
+                <div>
+                    <input type="text" id="card-front" placeholder="Question / Concept">
+                    <textarea id="card-back" rows="3" placeholder="Answer / Explanation"></textarea>
+                    <button class="btn btn-primary" style="width:100%" onclick="addFlashcard()">Save Flashcard</button>
+                </div>
+
+                <!-- Interactive Viewer -->
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                    <div id="deck-empty" style="color:var(--text-muted); text-align:center; margin-top:2rem;">
+                        No flashcards created yet. Add one on the left to start quizzing!
+                    </div>
+
+                    <div id="viewer-container" style="display:none; width:100%;">
+                        <div class="flashcard-box" onclick="this.classList.toggle('flipped')">
+                            <div class="card-inner">
+                                <div class="card-front" id="viewer-front">Front</div>
+                                <div class="card-back" id="viewer-back">Back</div>
+                            </div>
+                        </div>
+                        <div class="nav-controls">
+                            <button class="btn" style="background:#e2e8f0" onclick="navigateCard(-1)">&larr; Prev</button>
+                            <span id="card-counter" style="font-weight:700">1 / 1</span>
+                            <button class="btn" style="background:#e2e8f0" onclick="navigateCard(1)">Next &rarr;</button>
+                            <button class="btn btn-danger" onclick="deleteCurrentCard()">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // --- STATE MANAGEMENT ---
+    let tasks = JSON.parse(localStorage.getItem('sc_tasks')) || [];
+    let schedules = JSON.parse(localStorage.getItem('sc_schedules')) || [];
+    let flashcards = JSON.parse(localStorage.getItem('sc_flashcards')) || [];
+
+    let timeLeft = 25 * 60;
+    let timerId = null;
+    let currentCardIndex = 0;
+
+    // --- INITIALIZATION ---
+    window.onload = () => {
+        renderTasks();
+        renderSchedules();
+        renderFlashcards();
+        updateTimerDisplay();
+    };
+
+    function saveState() {
+        localStorage.setItem('sc_tasks', JSON.stringify(tasks));
+        localStorage.setItem('sc_schedules', JSON.stringify(schedules));
+        localStorage.setItem('sc_flashcards', JSON.stringify(flashcards));
     }
 
-    @Override
-    public void start(Stage primaryStage) {
-        primaryStage.setTitle("Personal Study Companion");
-
-        // Main Grid Layout
-        GridPane grid = new GridPane();
-        grid.setHgap(15);
-        grid.setVgap(15);
-        grid.setPadding(new Insets(20));
-        grid.setStyle("-fx-background-color: #f4f6f9;");
-
-        // Header
-        VBox header = new VBox(5);
-        header.setAlignment(Pos.CENTER);
-        Label title = new Label("My Study Space");
-        title.setFont(Font.font("Segoe UI", FontWeight.BOLD, 28));
-        title.setStyle("-fx-text-fill: #4f46e5;");
-        Label subtitle = new Label("Your simple, focused companion for distraction-free learning.");
-        subtitle.setStyle("-fx-text-fill: #718096;");
-        header.getChildren().addAll(title, subtitle);
-
-        // Cards
-        VBox timerCard = createTimerCard();
-        VBox taskCard = createTaskCard();
-        VBox scheduleCard = createScheduleCard();
-        VBox flashcardCard = createFlashcardCard();
-
-        // Add to Grid (2 Columns)
-        grid.add(timerCard, 0, 0);
-        grid.add(taskCard, 1, 0);
-        grid.add(scheduleCard, 0, 1);
-        grid.add(flashcardCard, 0, 2, 2, 1); // Spans 2 columns
-
-        VBox root = new VBox(20, header, grid);
-        root.setPadding(new Insets(10));
-        root.setStyle("-fx-background-color: #f4f6f9;");
-
-        ScrollPane scrollPane = new ScrollPane(root);
-        scrollPane.setFitToWidth(true);
-
-        Scene scene = new Scene(scrollPane, 900, 750);
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
-        setupAlarmMonitor();
+    // --- 1. TIMER MODULE ---
+    function updateTimerDisplay() {
+        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const s = (timeLeft % 60).toString().padStart(2, '0');
+        document.getElementById('timer-display').textContent = `${m}:${s}`;
     }
 
-    // ==================== SECTION 1: TIMER ====================
-    private VBox createTimerCard() {
-        VBox card = createCardStyle("â±ï¸ Focus Timer");
-
-        timerDisplay = new Label("25:00");
-        timerDisplay.setFont(Font.font("Monospaced", FontWeight.BOLD, 42));
-        timerDisplay.setAlignment(Pos.CENTER);
-
-        HBox presets = new HBox(10);
-        presets.setAlignment(Pos.CENTER);
-        Button p25 = new Button("Study (25m)");
-        p25.setOnAction(e -> setTimerPreset(25));
-        Button p5 = new Button("Short Break (5m)");
-        p5.setOnAction(e -> setTimerPreset(5));
-        Button p15 = new Button("Long Break (15m)");
-        p15.setOnAction(e -> setTimerPreset(15));
-        presets.getChildren().addAll(p25, p5, p15);
-
-        HBox controls = new HBox(10);
-        controls.setAlignment(Pos.CENTER);
-        startBtn = new Button("Start");
-        startBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold;");
-        startBtn.setOnAction(e -> toggleTimer());
-
-        Button resetBtn = new Button("Reset");
-        resetBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold;");
-        resetBtn.setOnAction(e -> resetTimer());
-
-        controls.getChildren().addAll(startBtn, resetBtn);
-
-        card.getChildren().addAll(timerDisplay, presets, controls);
-        return card;
-    }
-
-    private void updateTimerDisplay() {
-        int minutes = timeLeft / 60;
-        int seconds = timeLeft % 60;
-        timerDisplay.setText(String.format("%02d:%02d", minutes, seconds));
-    }
-
-    private void toggleTimer() {
-        if (isTimerRunning) {
-            timerTimeline.stop();
-            isTimerRunning = false;
-            startBtn.setText("Start");
-            startBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold;");
+    function toggleTimer() {
+        const btn = document.getElementById('start-btn');
+        if (timerId) {
+            clearInterval(timerId);
+            timerId = null;
+            btn.textContent = "Resume";
+            btn.className = "btn btn-primary";
         } else {
-            isTimerRunning = true;
-            startBtn.setText("Pause");
-            startBtn.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-weight: bold;");
-
-            timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
+            btn.textContent = "Pause";
+            btn.className = "btn btn-accent";
+            timerId = setInterval(() => {
                 if (timeLeft > 0) {
                     timeLeft--;
                     updateTimerDisplay();
                 } else {
-                    timerTimeline.stop();
-                    showAlert("Time's Up!", "Take a well-deserved break or jump back into studying!");
+                    clearInterval(timerId);
+                    timerId = null;
+                    alert("Focus session complete! Take a break.");
                     resetTimer();
                 }
-            }));
-            timerTimeline.setCycleCount(Timeline.INDEFINITE);
-            timerTimeline.play();
+            }, 1000);
         }
     }
 
-    private void resetTimer() {
-        if (timerTimeline != null) timerTimeline.stop();
-        isTimerRunning = false;
+    function resetTimer() {
+        clearInterval(timerId);
+        timerId = null;
         timeLeft = 25 * 60;
         updateTimerDisplay();
-        startBtn.setText("Start");
-        startBtn.setStyle("-fx-background-color: #10b981; -fx-text-fill: white; -fx-font-weight: bold;");
+        const btn = document.getElementById('start-btn');
+        btn.textContent = "Start Session";
+        btn.className = "btn btn-primary";
     }
 
-    private void setTimerPreset(int minutes) {
-        resetTimer();
-        timeLeft = minutes * 60;
+    function setTimer(mins) {
+        clearInterval(timerId);
+        timerId = null;
+        timeLeft = mins * 60;
         updateTimerDisplay();
+        document.getElementById('start-btn').textContent = "Start Session";
     }
 
-    // ==================== SECTION 2: TASKS ====================
-    private VBox createTaskCard() {
-        VBox card = createCardStyle("ðŸ“ Homework & Tasks");
-
-        HBox inputGroup = new HBox(10);
-        TextField taskInput = new TextField();
-        taskInput.setPromptText("What needs to get done?");
-        HBox.setHgrow(taskInput, Priority.ALWAYS);
-
-        Button addBtn = new Button("Add");
-        addBtn.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white;");
-        addBtn.setOnAction(e -> {
-            if (!taskInput.getText().trim().isEmpty()) {
-                tasks.add(new Task(taskInput.getText().trim()));
-                taskInput.clear();
-                renderTasks();
-            }
-        });
-
-        inputGroup.getChildren().addAll(taskInput, addBtn);
-        card.getChildren().addAll(inputGroup, taskListVBox);
-        return card;
+    // --- 2. SCHEDULE MODULE ---
+    function renderSchedules() {
+        const list = document.getElementById('sched-list');
+        list.innerHTML = schedules.map((s, i) => `
+            <li class="list-item">
+                <div>
+                    <span class="badge">${s.day}</span>
+                    <strong>${s.subject}</strong> at ${s.time}
+                </div>
+                <button class="btn btn-danger" onclick="deleteSchedule(${i})">✕</button>
+            </li>
+        `).join('');
+        saveState();
     }
 
-    private void renderTasks() {
-        taskListVBox.getChildren().clear();
-        for (int i = 0; i < tasks.size(); i++) {
-            int index = i;
-            Task t = tasks.get(i);
-            HBox row = new HBox(10);
-            row.setAlignment(Pos.CENTER_LEFT);
+    function addSchedule() {
+        const subject = document.getElementById('sched-subject').value.trim();
+        const day = document.getElementById('sched-day').value;
+        const time = document.getElementById('sched-time').value;
 
-            CheckBox cb = new CheckBox(t.text);
-            cb.setSelected(t.completed);
-            cb.setOnAction(e -> t.completed = cb.isSelected());
-
-            Region spacer = new Region();
-            HBox.setHgrow(spacer, Priority.ALWAYS);
-
-            Button delBtn = new Button("X");
-            delBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white;");
-            delBtn.setOnAction(e -> {
-                tasks.remove(index);
-                renderTasks();
-            });
-
-            row.getChildren().addAll(cb, spacer, delBtn);
-            taskListVBox.getChildren().add(row);
+        if (subject && time) {
+            schedules.push({ subject, day, time });
+            document.getElementById('sched-subject').value = '';
+            document.getElementById('sched-time').value = '';
+            renderSchedules();
         }
     }
 
-    // ==================== SECTION 3: SCHEDULE ====================
-    private VBox createScheduleCard() {
-        VBox card = createCardStyle("ðŸ“… Class Schedule");
-
-        TextField nameInput = new TextField();
-        nameInput.setPromptText("Subject Name");
-
-        HBox timeGroup = new HBox(10);
-        TextField timeInput = new TextField();
-        timeInput.setPromptText("HH:mm (24hr)");
-        HBox.setHgrow(timeInput, Priority.ALWAYS);
-
-        Button addBtn = new Button("Add");
-        addBtn.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white;");
-        addBtn.setOnAction(e -> {
-            if (!nameInput.getText().isEmpty() && !timeInput.getText().isEmpty()) {
-                schedules.add(new ScheduleItem(nameInput.getText(), timeInput.getText()));
-                nameInput.clear();
-                timeInput.clear();
-                renderSchedules();
-            }
-        });
-
-        timeGroup.getChildren().addAll(timeInput, addBtn);
-        card.getChildren().addAll(nameInput, timeGroup, scheduleListVBox);
-        return card;
+    function deleteSchedule(i) {
+        schedules.splice(i, 1);
+        renderSchedules();
     }
 
-    private void renderSchedules() {
-        scheduleListVBox.getChildren().clear();
-        for (int i = 0; i < schedules.size(); i++) {
-            int index = i;
-            ScheduleItem item = schedules.get(i);
-            HBox row = new HBox(10);
-            row.setAlignment(Pos.CENTER_LEFT);
+    // --- 3. TASKS MODULE ---
+    function renderTasks() {
+        const list = document.getElementById('task-list');
+        list.innerHTML = tasks.map((t, i) => `
+            <li class="list-item">
+                <span class="${t.done ? 'task-done' : ''}" style="cursor:pointer" onclick="toggleTask(${i})">
+                    ${t.done ? '✓ ' : '○ '} ${t.text}
+                </span>
+                <button class="btn btn-danger" onclick="deleteTask(${i})">✕</button>
+            </li>
+        `).join('');
+        saveState();
+    }
 
-            Label lbl = new Label(item.name + " @ " + item.time);
-            Region spacer = new Region();
-            HBox.setHgrow(spacer, Priority.ALWAYS);
-
-            Button delBtn = new Button("X");
-            delBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white;");
-            delBtn.setOnAction(e -> {
-                schedules.remove(index);
-                renderSchedules();
-            });
-
-            row.getChildren().addAll(lbl, spacer, delBtn);
-            scheduleListVBox.getChildren().add(row);
+    function addTask() {
+        const input = document.getElementById('task-input');
+        if (input.value.trim()) {
+            tasks.push({ text: input.value.trim(), done: false });
+            input.value = '';
+            renderTasks();
         }
     }
 
-    private void setupAlarmMonitor() {
-        Timeline alarmCheck = new Timeline(new KeyFrame(Duration.seconds(30), e -> {
-            String currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
-            for (ScheduleItem item : schedules) {
-                if (item.time.equals(currentTime) && !item.alerted) {
-                    showAlert("â° Class Alarm", "It's time for " + item.name + "!");
-                    item.alerted = true;
-                }
-            }
-        }));
-        alarmCheck.setCycleCount(Timeline.INDEFINITE);
-        alarmCheck.play();
+    function toggleTask(i) {
+        tasks[i].done = !tasks[i].done;
+        renderTasks();
     }
 
-    // ==================== SECTION 4: FLASHCARDS ====================
-    private VBox createFlashcardCard() {
-        VBox card = createCardStyle("ðŸ—‚ï¸ Active Recall Flashcards");
-
-        HBox split = new HBox(20);
-
-        // Creator Form
-        VBox creator = new VBox(8);
-        creator.setPrefWidth(300);
-        Label createLbl = new Label("Create New Card");
-        createLbl.setFont(Font.font("Segoe UI", FontWeight.BOLD, 14));
-
-        TextField frontInput = new TextField();
-        frontInput.setPromptText("e.g., What is Photosynthesis?");
-        TextArea backInput = new TextArea();
-        backInput.setPromptText("e.g., Process plants use to convert light into food.");
-        backInput.setPrefRowCount(3);
-
-        Button saveCardBtn = new Button("Save Card");
-        saveCardBtn.setMaxWidth(Double.MAX_VALUE);
-        saveCardBtn.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white;");
-        saveCardBtn.setOnAction(e -> {
-            if (!frontInput.getText().trim().isEmpty() && !backInput.getText().trim().isEmpty()) {
-                flashcards.add(new Flashcard(frontInput.getText().trim(), backInput.getText().trim()));
-                frontInput.clear();
-                backInput.clear();
-                currentCardIndex = flashcards.size() - 1;
-                updateFlashcardViewer();
-            }
-        });
-
-        creator.getChildren().addAll(createLbl, new Label("Question / Concept:"), frontInput, new Label("Answer / Explanation:"), backInput, saveCardBtn);
-
-        // Deck Viewer
-        emptyDeckLabel = new Label("No cards created yet.\nCreate a card on the left to start quizzing yourself!");
-        emptyDeckLabel.setAlignment(Pos.CENTER);
-
-        flashcardBox = new Button("Question");
-        flashcardBox.setPrefSize(350, 160);
-        flashcardBox.setStyle("-fx-background-color: #ffffff; -fx-border-color: #4f46e5; -fx-border-width: 2px; -fx-font-size: 16px;");
-        flashcardBox.setOnAction(e -> flipCard());
-
-        HBox nav = new HBox(10);
-        nav.setAlignment(Pos.CENTER);
-        Button prevBtn = new Button("â† Prev");
-        prevBtn.setOnAction(e -> {
-            if (!flashcards.isEmpty()) {
-                currentCardIndex = (currentCardIndex - 1 + flashcards.size()) % flashcards.size();
-                updateFlashcardViewer();
-            }
-        });
-
-        cardIndexLabel = new Label("1 / 1");
-        Button nextBtn = new Button("Next â†’");
-        nextBtn.setOnAction(e -> {
-            if (!flashcards.isEmpty()) {
-                currentCardIndex = (currentCardIndex + 1) % flashcards.size();
-                updateFlashcardViewer();
-            }
-        });
-
-        Button delCardBtn = new Button("Delete");
-        delCardBtn.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white;");
-        delCardBtn.setOnAction(e -> deleteCurrentCard());
-
-        nav.getChildren().addAll(prevBtn, cardIndexLabel, nextBtn, delCardBtn);
-
-        deckViewerBox = new VBox(10, flashcardBox, nav);
-        deckViewerBox.setAlignment(Pos.CENTER);
-        deckViewerBox.setVisible(false);
-
-        StackPane viewerArea = new StackPane(emptyDeckLabel, deckViewerBox);
-        HBox.setHgrow(viewerArea, Priority.ALWAYS);
-
-        split.getChildren().addAll(creator, viewerArea);
-        card.getChildren().add(split);
-        return card;
+    function deleteTask(i) {
+        tasks.splice(i, 1);
+        renderTasks();
     }
 
-    private void updateFlashcardViewer() {
-        if (flashcards.isEmpty()) {
-            emptyDeckLabel.setVisible(true);
-            deckViewerBox.setVisible(false);
+    // --- 4. FLASHCARD MODULE ---
+    function renderFlashcards() {
+        const emptyView = document.getElementById('deck-empty');
+        const viewer = document.getElementById('viewer-container');
+
+        if (flashcards.length === 0) {
+            emptyView.style.display = 'block';
+            viewer.style.display = 'none';
             return;
         }
 
-        emptyDeckLabel.setVisible(false);
-        deckViewerBox.setVisible(true);
-        isFlipped = false;
+        emptyView.style.display = 'none';
+        viewer.style.display = 'block';
 
-        Flashcard card = flashcards.get(currentCardIndex);
-        flashcardBox.setText(card.front);
-        flashcardBox.setStyle("-fx-background-color: #ffffff; -fx-border-color: #4f46e5; -fx-text-fill: #2d3748; -fx-border-width: 2px; -fx-font-size: 16px;");
-        cardIndexLabel.setText((currentCardIndex + 1) + " / " + flashcards.size());
+        // Unflip card box
+        document.querySelector('.flashcard-box').classList.remove('flipped');
+
+        const card = flashcards[currentCardIndex];
+        document.getElementById('viewer-front').textContent = card.front;
+        document.getElementById('viewer-back').textContent = card.back;
+        document.getElementById('card-counter').textContent = `${currentCardIndex + 1} / ${flashcards.length}`;
+
+        saveState();
     }
 
-    private void flipCard() {
-        if (flashcards.isEmpty()) return;
-        isFlipped = !isFlipped;
-        Flashcard card = flashcards.get(currentCardIndex);
-        if (isFlipped) {
-            flashcardBox.setText(card.back);
-            flashcardBox.setStyle("-fx-background-color: #4f46e5; -fx-text-fill: white; -fx-font-size: 16px;");
-        } else {
-            flashcardBox.setText(card.front);
-            flashcardBox.setStyle("-fx-background-color: #ffffff; -fx-border-color: #4f46e5; -fx-text-fill: #2d3748; -fx-border-width: 2px; -fx-font-size: 16px;");
+    function addFlashcard() {
+        const front = document.getElementById('card-front').value.trim();
+        const back = document.getElementById('card-back').value.trim();
+
+        if (front && back) {
+            flashcards.push({ front, back });
+            document.getElementById('card-front').value = '';
+            document.getElementById('card-back').value = '';
+            currentCardIndex = flashcards.length - 1;
+            renderFlashcards();
         }
     }
 
-    private void deleteCurrentCard() {
-        if (flashcards.isEmpty()) return;
-        flashcards.remove(currentCardIndex);
-        if (currentCardIndex >= flashcards.size() && !flashcards.isEmpty()) {
-            currentCardIndex = flashcards.size() - 1;
+    function navigateCard(step) {
+        if (flashcards.length === 0) return;
+        currentCardIndex = (currentCardIndex + step + flashcards.length) % flashcards.length;
+        renderFlashcards();
+    }
+
+    function deleteCurrentCard() {
+        if (flashcards.length === 0) return;
+        flashcards.splice(currentCardIndex, 1);
+        if (currentCardIndex >= flashcards.length && flashcards.length > 0) {
+            currentCardIndex = flashcards.length - 1;
         }
-        updateFlashcardViewer();
+        renderFlashcards();
     }
-
-    // --- Helpers ---
-    private VBox createCardStyle(String title) {
-        VBox card = new VBox(12);
-        card.setPadding(new Insets(15));
-        card.setStyle("-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);");
-
-        Label cardTitle = new Label(title);
-        cardTitle.setFont(Font.font("Segoe UI", FontWeight.BOLD, 16));
-        cardTitle.setStyle("-fx-text-fill: #4f46e5;");
-        card.getChildren().add(cardTitle);
-        return card;
-    }
-
-    private void showAlert(String title, String message) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);
-        alert.setContentText(message);
-        alert.show();
-    }
-
-    // --- Data Classes ---
-    private static class Task {
-        String text;
-        boolean completed = false;
-        Task(String text) { this.text = text; }
-    }
-
-    private static class ScheduleItem {
-        String name;
-        String time;
-        boolean alerted = false;
-        ScheduleItem(String name, String time) { this.name = name; this.time = time; }
-    }
-
-    private static class Flashcard {
-        String front;
-        String back;
-        Flashcard(String front, String back) { this.front = front; this.back = back; }
-    }
-}
+</script>
+</body>
+    </html>
