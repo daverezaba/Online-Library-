@@ -1,278 +1,55 @@
-/**
- * Student Records Data Processor
- * File: app.js
- * 
- * Execution: node app.js
- */
+name: Run Student Records Analysis
 
-const fs = require('fs');
-const path = require('path');
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
 
-const DATA_FILE = path.join(__dirname, 'students.json');
-const REPORT_FILE = path.join(__dirname, 'report.json');
+jobs:
+  run-processor:
+    runs-on: ubuntu-latest
 
-/**
- * Helper to ensure a sample students.json file exists if missing.
- */
-function ensureSampleDataExists() {
-  if (!fs.existsSync(DATA_FILE)) {
-    const sampleData = [
-      { id: 101, name: "Alice Johnson", year: 2, course: "Computer Science", grades: [88, 92, 95, 90], enrolled: true },
-      { id: 102, name: "Bob Smith", year: 3, course: "Computer Science", grades: [75, 80, 82, 78], enrolled: true },
-      { id: 103, name: "Charlie Brown", year: 1, course: "Mathematics", grades: [95, 98, 100, 96], enrolled: false },
-      { id: 104, name: "Diana Prince", year: 4, course: "Physics", grades: [85, 89, 90], enrolled: true },
-      { id: 105, name: "Ethan Hunt", year: 2, course: "Mathematics", grades: [], enrolled: false },
-      { id: 106, name: "Fiona Gallagher", year: 3, course: "Physics", grades: [91, 94, 96, 88], enrolled: true }
-    ];
-    fs.writeFileSync(DATA_FILE, JSON.stringify(sampleData, null, 2), 'utf-8');
-  }
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Execute Data Processor
+        run: node app.js
+
+      - name: Upload Generated Report Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: student-summary-report
+          path: report.json
+          if-no-files-found: error
+
+          {
+  "name": "student-records-processor",
+  "version": "1.0.0",
+  "description": "Pure JavaScript student records processor running on Node.js",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "engineStrict": true,
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "ISC"
 }
 
-/**
- * 1. Calculates the average grade for a single student.
- * Handles edge case where grades array is empty or missing.
- */
-function getAverageGrade(student) {
-  if (!student || !Array.isArray(student.grades) || student.grades.length === 0) {
-    return 0;
-  }
-  const sum = student.grades.reduce((acc, curr) => acc + curr, 0);
-  return Number((sum / student.grades.length).toFixed(2));
-}
-
-/**
- * 2. Returns the top N students sorted by average grade descending.
- * Includes validation for input arguments.
- */
-function getTopStudents(students, n) {
-  if (!Array.isArray(students)) {
-    throw new TypeError('Invalid input: students must be an array.');
-  }
-  if (typeof n !== 'number' || n < 0 || !Number.isInteger(n)) {
-    throw new Error('Invalid input: n must be a non-negative integer.');
-  }
-
-  return [...students]
-    .map(student => ({
-      ...student,
-      averageGrade: getAverageGrade(student)
-    }))
-    .sort((a, b) => b.averageGrade - a.averageGrade)
-    .slice(0, n);
-}
-
-/**
- * 3. Groups all students by their course field.
- */
-function groupByCourse(students) {
-  if (!Array.isArray(students)) {
-    throw new TypeError('Invalid input: students must be an array.');
-  }
-
-  return students.reduce((grouped, student) => {
-    const course = student.course || 'Unassigned';
-    if (!grouped[course]) {
-      grouped[course] = [];
-    }
-    grouped[course].push({ ...student });
-    return grouped;
-  }, {});
-}
-
-/**
- * 4. Counts enrolled vs non-enrolled students.
- */
-function getEnrolledCount(students) {
-  if (!Array.isArray(students)) {
-    throw new TypeError('Invalid input: students must be an array.');
-  }
-
-  return students.reduce(
-    (counts, student) => {
-      if (student.enrolled) {
-        counts.enrolled += 1;
-      } else {
-        counts.notEnrolled += 1;
-      }
-      return counts;
-    },
-    { enrolled: 0, notEnrolled: 0 }
-  );
-}
-
-/**
- * 5. Performs a case-insensitive search for a student by name.
- */
-function findStudent(students, name) {
-  if (!Array.isArray(students)) {
-    throw new TypeError('Invalid input: students must be an array.');
-  }
-  if (typeof name !== 'string') {
-    throw new TypeError('Invalid input: name must be a string.');
-  }
-
-  const query = name.trim().toLowerCase();
-  const matches = students.filter(
-    student => student.name && student.name.toLowerCase() === query
-  );
-
-  return matches.length > 0 ? { ...matches[0] } : null;
-}
-
-/**
- * 6. Calculates the average grade for each course, sorted highest to lowest.
- */
-function getCourseAverages(students) {
-  if (!Array.isArray(students)) {
-    throw new TypeError('Invalid input: students must be an array.');
-  }
-  if (students.length === 0) return [];
-
-  const grouped = groupByCourse(students);
-
-  const averages = Object.keys(grouped).map(course => {
-    const courseStudents = grouped[course];
-    const studentAverages = courseStudents.map(s => getAverageGrade(s));
-    const total = studentAverages.reduce((sum, avg) => sum + avg, 0);
-    const courseAverage = total / (studentAverages.length || 1);
-
-    return {
-      course,
-      average: Number(courseAverage.toFixed(2))
-    };
-  });
-
-  return averages.sort((a, b) => b.average - a.average);
-}
-
-/**
- * 7. Builds a complete summary analytical report object.
- */
-function exportSummary(students) {
-  if (!Array.isArray(students)) {
-    throw new TypeError('Invalid input: students must be an array.');
-  }
-
-  if (students.length === 0) {
-    return {
-      totalStudents: 0,
-      overallAverage: 0,
-      topStudent: null,
-      courseBreakdown: []
-    };
-  }
-
-  const allAverages = students.map(s => getAverageGrade(s));
-  const totalSum = allAverages.reduce((sum, g) => sum + g, 0);
-  const overallAverage = Number((totalSum / students.length).toFixed(2));
-
-  const topList = getTopStudents(students, 1);
-  const topStudent = topList.length > 0 ? topList[0] : null;
-
-  return {
-    totalStudents: students.length,
-    overallAverage,
-    topStudent: topStudent
-      ? { id: topStudent.id, name: topStudent.name, course: topStudent.course, averageGrade: topStudent.averageGrade }
-      : null,
-    courseBreakdown: getCourseAverages(students)
-  };
-}
-
-/**
- * Main function reading dataset, calling functions, printing output, and writing report file.
- */
-function main() {
-  ensureSampleDataExists();
-
-  console.log("==========================================");
-  console.log("   STUDENT RECORDS ANALYSIS REPORT");
-  console.log("==========================================");
-
-  let rawData;
-  try {
-    rawData = fs.readFileSync(DATA_FILE, 'utf-8');
-  } catch (err) {
-    console.error(`Error reading ${DATA_FILE}:`, err.message);
-    process.exit(1);
-  }
-
-  let students;
-  try {
-    students = JSON.parse(rawData);
-  } catch (err) {
-    console.error("Error parsing JSON dataset:", err.message);
-    process.exit(1);
-  }
-
-  // 1. Individual Average Demonstration
-  console.log("\n[1] SAMPLE INDIVIDUAL AVERAGE");
-  if (students.length > 0) {
-    const sample = students[0];
-    console.log(`- ${sample.name}: ${getAverageGrade(sample)}`);
-  } else {
-    console.log("- No students available.");
-  }
-
-  // 2. Top Students
-  console.log("\n[2] TOP 3 STUDENTS");
-  const top3 = getTopStudents(students, 3);
-  top3.forEach((s, idx) => {
-    console.log(`  ${idx + 1}. ${s.name} (${s.course}) - Avg: ${s.averageGrade}`);
-  });
-
-  // 3. Group by Course
-  console.log("\n[3] STUDENTS GROUPED BY COURSE");
-  const grouped = groupByCourse(students);
-  Object.keys(grouped).forEach(course => {
-    const names = grouped[course].map(s => s.name).join(", ");
-    console.log(`- ${course} (${grouped[course].length}): ${names}`);
-  });
-
-  // 4. Enrolled Count
-  console.log("\n[4] ENROLLMENT STATUS");
-  const counts = getEnrolledCount(students);
-  console.log(`- Enrolled: ${counts.enrolled}`);
-  console.log(`- Not Enrolled: ${counts.notEnrolled}`);
-
-  // 5. Search Functionality
-  console.log("\n[5] SEARCH TESTS (CASE-INSENSITIVE)");
-  const searchMatch = findStudent(students, "charlie brown");
-  console.log(`- Query 'charlie brown':`, searchMatch ? `${searchMatch.name} [ID: ${searchMatch.id}]` : "Not found");
-  
-  const searchMissing = findStudent(students, "Ghost Student");
-  console.log(`- Query 'Ghost Student':`, searchMissing ? searchMissing.name : "null (Not found)");
-
-  // 6. Course Averages
-  console.log("\n[6] COURSE AVERAGES (HIGHEST TO LOWEST)");
-  const courseAverages = getCourseAverages(students);
-  courseAverages.forEach(item => {
-    console.log(`- ${item.course}: ${item.average}`);
-  });
-
-  // 7. Overall Summary & File Output
-  console.log("\n[7] SUMMARY REPORT EXPORT");
-  const summary = exportSummary(students);
-  console.log(`- Total Students: ${summary.totalStudents}`);
-  console.log(`- Overall Average Grade: ${summary.overallAverage}`);
-  console.log(`- Top Performing Student: ${summary.topStudent ? `${summary.topStudent.name} (${summary.topStudent.averageGrade})` : "N/A"}`);
-
-  try {
-    fs.writeFileSync(REPORT_FILE, JSON.stringify(summary, null, 2), 'utf-8');
-    console.log(`\nSummary report successfully written to '${REPORT_FILE}'.`);
-  } catch (err) {
-    console.error(`Failed to write report file:`, err.message);
-  }
-
-  // Input Validation Test (Stretch Goal)
-  console.log("\n[8] INPUT VALIDATION EDGE CASE TEST");
-  try {
-    getTopStudents(students, -3);
-  } catch (err) {
-    console.log(`- Caught invalid input error: "${err.message}"`);
-  }
-
-  console.log("\n==========================================");
-}
-
-main();
+[
+  { "id": 101, "name": "Alice Johnson", "year": 2, "course": "Computer Science", "grades": [88, 92, 95, 90], "enrolled": true },
+  { "id": 102, "name": "Bob Smith", "year": 3, "course": "Computer Science", "grades": [75, 80, 82, 78], "enrolled": true },
+  { "id": 103, "name": "Charlie Brown", "year": 1, "course": "Mathematics", "grades": [95, 98, 100, 96], "enrolled": false },
+  { "id": 104, "name": "Diana Prince", "year": 4, "course": "Physics", "grades": [85, 89, 90], "enrolled": true },
+  { "id": 105, "name": "Ethan Hunt", "year": 2, "course": "Mathematics", "grades": [], "enrolled": false },
+  { "id": 106, "name": "Fiona Gallagher", "year": 3, "course": "Physics", "grades": [91, 94, 96, 88], "enrolled": true }
+]
